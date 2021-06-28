@@ -1,20 +1,21 @@
 version: "3"
 services:
-  mysql:
+  db:
     image: mysql:5.7
     volumes:
-      - ../sql:/home/isucon/isucari/webapp/sql
-    #  - ../mysql/db:/docker-entrypoint-initdb.d
-    #  - ../logs/mysql:/var/log/mysql
-    #  - ../../provisioning/ansible/roles/web-bootstrap/files/my.cnf:/etc/mysql/conf.d/my.cnf
-    #  - ../../provisioning/ansible/roles/web-bootstrap/files/slow-mysqld.cnf:/etc/mysql/conf.d/slowquery.cnf
+      - ../sql:/docker-entrypoint-initdb.d
+      #- ../sql/my.cnf:/etc/mysql/conf.d/my.cnf
+    restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: isucari
-      MYSQL_USER: isucon
-      MYSQL_PASSWORD: isucon
+      MYSQL_USER: isucari
+      MYSQL_PASSWORD: isucari
+    networks:
+      - backend
     ports:
-      - "3306:3306"
+      - "3306"
+
   api-server:
     build: ../go
     entrypoint:
@@ -22,19 +23,21 @@ services:
       - -timeout
       - 60s
       - -wait
-      - tcp://mysql:3306
+      - tcp://db:3306
     volumes:
       - ../public:/home/isucon/isucari/webapp/public
-    #  - ../mysql/db:/go/src/mysql/db
-    #  - ../fixture:/go/src/fixture
     environment:
       MYSQL_DBNAME: isucari
-      MYSQL_USER: isucon
-      MYSQL_PASS: isucon
-      MYSQL_HOST: mysql
+      MYSQL_USER: isucari
+      MYSQL_PASS: isucari
+      MYSQL_HOST: db
       SERVER_PORT: 8000
+    networks:
+      - backend
     ports:
       - "8000:8000"
     depends_on:
-      - mysql
+      - db
     command: /home/isucon/isucari/webapp/go/isucari
+networks:
+  backend:
