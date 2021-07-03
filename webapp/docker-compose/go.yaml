@@ -34,10 +34,21 @@ services:
       SERVER_PORT: 8000
     networks:
       - backend
-    ports:
-      - "8000:8000"
     depends_on:
       - db
     command: /home/isucon/isucari/webapp/go/isucari
+
+  web:
+    build: ../nginx
+    volumes:
+      - ../../provisioning/roles/webapp.nginx/files/etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ../../provisioning/roles/webapp.nginx/files/etc/nginx/sites-available/isucari.conf:/etc/nginx/sites-enabled/isucari.conf
+    networks:
+      - backend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-server
+
 networks:
   backend:
